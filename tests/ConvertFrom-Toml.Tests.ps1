@@ -21,7 +21,7 @@ Describe "ConvertFrom-Toml" {
 Roses are red
 Violets are blue"""
 '@
-            Expected = "Roses are red`nViolets are blue"
+            Expected = "Roses are red$([Environment]::NewLine)Violets are blue"
         }
         @{
             Scenario = 'Literal string'
