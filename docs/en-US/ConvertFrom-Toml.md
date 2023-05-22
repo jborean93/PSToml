@@ -34,6 +34,13 @@ PS C:\> $obj.foo  # bar
 Converts the TOML string to a Dictionary object.
 The TOML keys can be accessed in the dictionary like any other dictionary object in PowerShell.
 
+### Example 2 - Convert TOML from file to an object
+```powershell
+PS C:\> Get-Content pyproject.toml | ConvertFrom-Toml
+```
+
+Reads the contents of the file `pyproject.toml` and converts it from the TOML string to an object.
+
 ## PARAMETERS
 
 ### -InputObject
@@ -57,7 +64,7 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## INPUTS
 
 ### System.String[]
-Any string piped into this cmdlet will be converted to their own `OrderedDictionary` object.
+All the string inputs will be combined together as a single string to convert from a TOML string.
 
 ## OUTPUTS
 

@@ -5,7 +5,13 @@ Describe "ConvertFrom-Toml" {
         $actual = ConvertFrom-Toml -InputObject 'foo' -ErrorAction SilentlyContinue -ErrorVariable err
         $actual | Should -BeNullOrEmpty
         $err.Count | Should -Be 1
-        [string]$err[0] | Should -BeLike '*Expecting ``=`` after a key instead of <eof>*'
+        [string]$err[0] | Should -BeLike '*Expecting ``=`` after a key instead of*'
+    }
+
+    It "Converts multiple input values into 1 toml object" {
+        $actual = "", "foo = 'bar'`n", "`n", "", "hello = 123`r`n", "`r`n" | ConvertFrom-Toml
+        $actual.foo | Should -Be bar
+        $actual.hello | Should -Be 123
     }
 
     It "Converts string type - <Scenario>" -TestCases @(

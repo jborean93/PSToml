@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Management.Automation;
+using System.Text;
 using Tomlyn;
 using Tomlyn.Model;
 
@@ -12,38 +13,46 @@ namespace PSToml;
 [OutputType(typeof(OrderedDictionary))]
 public sealed class ConvertFromTomlCommand : PSCmdlet
 {
+    private StringBuilder _inputValues = new();
+
     [Parameter(
         Mandatory = true,
         Position = 0,
         ValueFromPipeline = true,
         ValueFromPipelineByPropertyName = true
     )]
-    [ValidateNotNullOrEmpty]
+    [AllowEmptyString]
     public string[] InputObject { get; set; } = Array.Empty<string>();
 
     protected override void ProcessRecord()
     {
         foreach (string toml in InputObject)
         {
-            TomlTable table;
-            try
-            {
-                table = TOMLLib.ConvertFromToml(toml);
-            }
-            catch (Exception e)
-            {
-                WriteError(new ErrorRecord(
-                    e,
-                    "ParseError",
-                    ErrorCategory.NotSpecified,
-                    toml
-                ));
-                continue;
-            }
-
-            OrderedDictionary result = ConvertToOrderedDictionary(table);
-            WriteObject(result);
+            _inputValues.AppendLine(toml);
         }
+    }
+
+    protected override void EndProcessing()
+    {
+        string toml = _inputValues.ToString();
+        TomlTable table;
+        try
+        {
+            table = TOMLLib.ConvertFromToml(toml);
+        }
+        catch (Exception e)
+        {
+            WriteError(new ErrorRecord(
+                e,
+                "ParseError",
+                ErrorCategory.NotSpecified,
+                toml
+            ));
+            return;
+        }
+
+        OrderedDictionary result = ConvertToOrderedDictionary(table);
+        WriteObject(result);
     }
 
     private OrderedDictionary ConvertToOrderedDictionary(TomlTable table)
