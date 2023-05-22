@@ -1,6 +1,6 @@
 # PSToml
 
-[![Test workflow](https://github.com/jborean93/PSToml/workflows/Test%20PSTOML/badge.svg)](https://github.com/jborean93/PSToml/actions/workflows/ci.yml)
+[![Test workflow](https://github.com/jborean93/PSToml/workflows/Test%20PSToml/badge.svg)](https://github.com/jborean93/PSToml/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/jborean93/PSToml/branch/main/graph/badge.svg?token=b51IOhpLfQ)](https://codecov.io/gh/jborean93/PSToml)
 [![PowerShell Gallery](https://img.shields.io/powershellgallery/dt/PSToml.svg)](https://www.powershellgallery.com/packages/PSToml)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/jborean93/PSToml/blob/main/LICENSE)
