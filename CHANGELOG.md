@@ -1,6 +1,6 @@
 # Changelog for PSToml
 
-## v0.3.0 - TBD
+## v0.3.0 - 2023-11-28
 
 + Migrated to new ALC structure that simplifies the code and ensures deps are loaded in the ALC
 + Added support for Windows PowerShell (5.1)
