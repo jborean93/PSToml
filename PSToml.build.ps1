@@ -21,7 +21,12 @@ $UseNativeArguments = $PSVersionTable.PSVersion.Major -gt 7 -or ($PSVersionTable
 [xml]$csharpProjectInfo = Get-Content ([IO.Path]::Combine($CSharpPath, '*.csproj'))
 $TargetFrameworks = @(@($csharpProjectInfo.Project.PropertyGroup)[0].TargetFrameworks.Split(
         ';', [StringSplitOptions]::RemoveEmptyEntries))
-$PSFramework = $TargetFrameworks[0]
+$PSFramework = if ($IsCoreCLR) {
+    $TargetFrameworks[1]
+}
+else {
+    $TargetFrameworks[0]
+}
 
 task Clean {
     if (Test-Path $ReleasePath) {
@@ -86,7 +91,7 @@ task CopyToRelease {
 task Sign {
     $vaultName = $env:AZURE_KEYVAULT_NAME
     $vaultCert = $env:AZURE_KEYVAULT_CERT
-    if (-not $vaultName -or -not $vaultCert) {
+    if (-not $vaultName -or -not $vaultCert -or -not $IsCoreCLR) {
         return
     }
 

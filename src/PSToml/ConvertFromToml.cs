@@ -1,4 +1,3 @@
-using PSToml.Shared;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -38,7 +37,7 @@ public sealed class ConvertFromTomlCommand : PSCmdlet
         TomlTable table;
         try
         {
-            table = TOMLLib.ConvertFromToml(toml);
+            table = Toml.ToModel(toml);
         }
         catch (Exception e)
         {

@@ -5,7 +5,7 @@
 [![PowerShell Gallery](https://img.shields.io/powershellgallery/dt/PSToml.svg)](https://www.powershellgallery.com/packages/PSToml)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/jborean93/PSToml/blob/main/LICENSE)
 
-A TOML parser and writer for PowerShell 7+.
+A TOML parser and writer for PowerShell.
 
 See [PSToml index](docs/en-US/PSToml.md) for more details.
 
@@ -13,7 +13,7 @@ See [PSToml index](docs/en-US/PSToml.md) for more details.
 
 These cmdlets have the following requirements
 
-* PowerShell v7.2 or newer
+* PowerShell v5.1 or newer
 
 ## Examples
 

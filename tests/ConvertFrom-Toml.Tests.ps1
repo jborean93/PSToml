@@ -18,7 +18,7 @@ Describe "ConvertFrom-Toml" {
         @{
             Scenario = 'Basic'
             Raw = '"I''m a string. \"You can quote me\". Name\tJos\u00E9\nLocation\tSF."'
-            Expected = "I'm a string. ""You can quote me"". Name`tJosé`nLocation`tSF."
+            Expected = "I'm a string. ""You can quote me"". Name`tJos$([char]0x00E9)`nLocation`tSF."
         }
         @{
             Scenario = 'Multi-line basic'
