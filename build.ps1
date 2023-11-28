@@ -18,6 +18,11 @@ end {
     $modulePath = [IO.Path]::Combine($PSScriptRoot, 'tools', 'Modules')
     $requirements = Import-PowerShellDataFile ([IO.Path]::Combine($PSScriptRoot, 'requirements-dev.psd1'))
     foreach ($req in $requirements.GetEnumerator()) {
+        # OpenAuthenticode only works for Pwsh 7+
+        if ($req.Key -eq 'OpenAuthenticode' -and -not $IsCoreCLR) {
+            continue
+        }
+
         $targetPath = [IO.Path]::Combine($modulePath, $req.Key)
 
         if (Test-Path -LiteralPath $targetPath) {

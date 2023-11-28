@@ -1,5 +1,11 @@
 # Changelog for PSToml
 
+## v0.3.0 - TBD
+
++ Migrated to new ALC structure that simplifies the code and ensures deps are loaded in the ALC
++ Added support for Windows PowerShell (5.1)
+  + WinPS will not run with an ALC but should still load the libraries side by side if needed
+
 ## v0.2.0 - 2023-05-23
 
 + Changed piping behaviour of `ConvertFrom-Toml` to build the final TOML string for each input rather than try and convert each string input as individual TOML entries

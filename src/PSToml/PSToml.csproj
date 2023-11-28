@@ -1,13 +1,22 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net6.0</TargetFrameworks>
+    <TargetFrameworks>net472;net6.0</TargetFrameworks>
+    <LangVersion>10.0</LangVersion>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
-  <ItemGroup>
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
     <PackageReference Include="System.Management.Automation" Version="7.2.0" PrivateAssets="all" />
-    <ProjectReference Include="../Shared/PSToml.Shared.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">
+    <PackageReference Include="PowerShellStandard.Library" Version="5.1.0" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Tomlyn" Version="0.17.0" />
+    <ProjectReference Include="../PSToml.Shared/PSToml.Shared.csproj" />
   </ItemGroup>
 </Project>

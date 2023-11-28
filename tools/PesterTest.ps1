@@ -23,6 +23,10 @@ $ErrorActionPreference = 'Stop'
 
 $requirements = Import-PowerShellDataFile ([IO.Path]::Combine($PSScriptRoot, '..', 'requirements-dev.psd1'))
 foreach ($req in $requirements.GetEnumerator()) {
+    if ($req.Key -eq 'OpenAuthenticode' -and -not $IsCoreCLR) {
+        continue
+    }
+
     Import-Module -Name ([IO.Path]::Combine($PSScriptRoot, 'Modules', $req.Key))
 }
 
