@@ -149,4 +149,70 @@ color = "gray"
         $actual.products[2].sku | Should -Be 284758393
         $actual.products[2].color | Should -Be gray
     }
+
+    It "Converts inline array of normal values" {
+        $actual = ConvertFrom-Toml -InputObject @'
+foo = [1, "2", 3.4]
+'@
+
+        ,$actual.foo | Should -BeOfType ([object[]])
+        $actual.foo.Count | Should -Be 3
+
+        $actual.foo[0] | Should -Be 1
+        $actual.foo[0] | Should -BeOfType ([long])
+
+        $actual.foo[1] | Should -Be 2
+        $actual.foo[1] | Should -BeOfType ([string])
+
+        $actual.foo[2] | Should -Be 3.4
+        $actual.foo[2] | Should -BeOfType ([double])
+    }
+
+    It "Converts inline array of array values" {
+        $actual = ConvertFrom-Toml -InputObject @'
+foo = [[1, 2], ["3", "4"], [5.6]]
+'@
+
+        ,$actual.foo | Should -BeOfType ([object[]])
+        $actual.foo.Count | Should -Be 3
+
+
+        ,$actual.foo[0] | Should -BeOfType ([object[]])
+        $actual.foo[0].Count | Should -Be 2
+        $actual.foo[0][0] | Should -Be 1
+        $actual.foo[0][0] | Should -BeOfType ([long])
+        $actual.foo[0][1] | Should -Be 2
+        $actual.foo[0][1] | Should -BeOfType ([long])
+
+        ,$actual.foo[1] | Should -BeOfType ([object[]])
+        $actual.foo[1].Count | Should -Be 2
+        $actual.foo[1][0] | Should -Be 3
+        $actual.foo[1][0] | Should -BeOfType ([string])
+        $actual.foo[1][1] | Should -Be 4
+        $actual.foo[1][1] | Should -BeOfType ([string])
+
+        ,$actual.foo[2] | Should -BeOfType ([object[]])
+        $actual.foo[2].Count | Should -Be 1
+        $actual.foo[2][0] | Should -Be 5.6
+        $actual.foo[2][0] | Should -BeOfType ([double])
+    }
+
+    It "Converts inline array of table values" {
+        $actual = ConvertFrom-Toml -InputObject @'
+foo = [{foo = 1, bar = 2}, {foo = 3, bar = 4}]
+'@
+
+        ,$actual.foo | Should -BeOfType ([object[]])
+        $actual.foo.Count | Should -Be 2
+
+        $actual.foo[0] | Should -BeOfType ([System.Collections.Specialized.OrderedDictionary])
+        $actual.foo[0].Keys.Count | Should -Be 2
+        $actual.foo[0].foo | Should -Be 1
+        $actual.foo[0].bar | Should -Be 2
+
+        $actual.foo[1] | Should -BeOfType ([System.Collections.Specialized.OrderedDictionary])
+        $actual.foo[1].Keys.Count | Should -Be 2
+        $actual.foo[1].foo | Should -Be 3
+        $actual.foo[1].bar | Should -Be 4
+    }
 }

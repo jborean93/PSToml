@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Management.Automation;
 using Tomlyn;
 using Tomlyn.Model;
@@ -93,26 +94,54 @@ internal sealed class TomlConverter
         return inputObject switch
         {
             IDictionary dict => ConvertToTomlTable(dict, depth),
-            Array array => ConvertToTomlArray(array, depth),
+            IList array => ConvertToTomlArray(array, depth),
             _ => ConvertToTomlFriendlyObject(inputObject, depth),
         };
     }
 
-    private TomlArray ConvertToTomlArray(Array array, int depth)
+    private TomlObject ConvertToTomlArray(IList array, int depth)
     {
-        TomlArray result = new();
+        List<object> results = new();
+        bool isTableArray = true;
 
         foreach (object value in array)
         {
-            result.Add(ConvertToTomlObject(value, depth - 1));
+            object toSerialize = ConvertToTomlObject(value, depth - 1);
+
+            if (!(toSerialize is TomlTable tt))
+            {
+                isTableArray = false;
+            }
+
+            results.Add(toSerialize);
         }
 
-        return result;
+        if (isTableArray)
+        {
+            TomlTableArray ta = new();
+            foreach (object v in results)
+            {
+                ta.Add((TomlTable)v);
+            }
+
+            return ta;
+        }
+        else
+        {
+            TomlArray a = new();
+            foreach (object v in results)
+            {
+                a.Add(v);
+            }
+
+            return a;
+
+        }
     }
 
     private TomlTable ConvertToTomlTable(IDictionary dict, int depth)
     {
-        TomlTable model = new();
+        TomlTable model = new(inline: false);
         foreach (DictionaryEntry entry in dict)
         {
             object value = ConvertToTomlObject(entry.Value ?? "", depth - 1);
@@ -140,6 +169,14 @@ internal sealed class TomlConverter
         else if (obj is Enum enumObj)
         {
             return Convert.ChangeType(enumObj, enumObj.GetTypeCode());
+        }
+        else if (obj is IntPtr ptr)
+        {
+            return (long)ptr;
+        }
+        else if (obj is UIntPtr uptr)
+        {
+            return (ulong)uptr;
         }
 
         if (

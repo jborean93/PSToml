@@ -78,12 +78,32 @@ name = "plantain"
             char = [char]'c'
             null = $null
             enum = [System.IO.FileShare]::ReadWrite
+            intptr = [IntPtr]::new(-1)
+            uintptr = [UIntPtr]::new(1)
         })
         $actual | Should -Be @'
 guid = "00000000-0000-0000-0000-000000000000"
 char = "c"
 null = ""
 enum = 3
+intptr = -1
+uintptr = 1
+
+'@
+    }
+
+    It "Serializes array and list types" {
+        $actual = ConvertTo-Toml -InputObject ([Ordered]@{
+            array = @(1, 2, 3)
+            typed_array = [string[]]@(1, 2, "3")
+            array_list = [System.Collections.ArrayList]@(1, 2, 3)
+            generic_list = [System.Collections.Generic.List[string]]@(1, "2", 3)
+        })
+        $actual | Should -Be @'
+array = [1, 2, 3]
+typed_array = ["1", "2", "3"]
+array_list = [1, 2, 3]
+generic_list = ["1", "2", "3"]
 
 '@
     }
