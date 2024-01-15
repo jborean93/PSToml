@@ -1,5 +1,11 @@
 # Changelog for PSToml
 
+## v0.3.1 - TBD
+
++ Serialize any IList type as a Toml array value and not just an array
++ Deserialize Toml array values that contain table/array/ values into the proper dotnet object
++ Support serializing `IntPtr` and `UIntPtr` instances
+
 ## v0.3.0 - 2023-11-28
 
 + Migrated to new ALC structure that simplifies the code and ensures deps are loaded in the ALC

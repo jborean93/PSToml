@@ -75,7 +75,18 @@ public sealed class ConvertFromTomlCommand : PSCmdlet
     private object?[] ConvertToArray(TomlArray array)
     {
         List<object?> result = new();
-        result.AddRange(array);
+        foreach (object? value in array)
+        {
+            object? newValue = value switch
+            {
+                TomlArray a => ConvertToArray(a),
+                TomlTable t => ConvertToOrderedDictionary(t),
+                TomlTableArray ta => ConvertToListOfOrderedDictionary(ta),
+                TomlDateTime dt => dt.DateTime,
+                _ => value,
+            };
+            result.Add(newValue);
+        }
 
         return result.ToArray();
     }
