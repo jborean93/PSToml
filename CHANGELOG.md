@@ -1,6 +1,6 @@
 # Changelog for PSToml
 
-## v0.3.1 - TBD
+## v0.3.1 - 2024-01-29
 
 + Serialize any IList type as a Toml array value and not just an array
 + Deserialize Toml array values that contain table/array/ values into the proper dotnet object
