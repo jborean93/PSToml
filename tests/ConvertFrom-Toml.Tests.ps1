@@ -215,4 +215,22 @@ foo = [{foo = 1, bar = 2}, {foo = 3, bar = 4}]
         $actual.foo[1].foo | Should -Be 3
         $actual.foo[1].bar | Should -Be 4
     }
+
+    It "Converts table with empty array values" {
+        $actual = ConvertFrom-Toml -InputObject @'
+[features]
+default = ["foo"]
+foo = []
+bar = []
+'@
+        $actual.features | Should -BeOfType ([System.Collections.Specialized.OrderedDictionary])
+        $actual.features.Keys.Count | Should -Be 3
+        ,$actual.features.default | Should -BeOfType ([object[]])
+        $actual.features.default.Count | Should -Be 1
+        $actual.features.default | Should -Be "foo"
+        ,$actual.features.foo | Should -BeOfType ([object[]])
+        $actual.features.foo.Count | Should -Be 0
+        ,$actual.features.bar | Should -BeOfType ([object[]])
+        $actual.features.bar.Count | Should -Be 0
+    }
 }

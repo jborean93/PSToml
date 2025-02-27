@@ -117,4 +117,18 @@ Getter = "Exception getting \"Getter\": \"exception msg\""
 
 '@
     }
+
+    It "Converts table with empty array values" {
+        $actual = ConvertTo-Toml -InputObject ([Ordered]@{
+            default = @("foo")
+            foo = @()
+            bar = @()
+        })
+        $actual | Should -Be @'
+default = ["foo"]
+foo = []
+bar = []
+
+'@
+    }
 }
