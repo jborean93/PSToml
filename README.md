@@ -13,7 +13,7 @@ See [PSToml index](docs/en-US/PSToml.md) for more details.
 
 These cmdlets have the following requirements
 
-* PowerShell v5.1 or newer
+* PowerShell v5.1, or 7.4+
 
 ## Examples
 
@@ -60,17 +60,21 @@ The `-Depth` parameter can be used to serialize deeply nested objects, it defaul
 
 ## Installing
 
-The easiest way to install this module is through [PowerShellGet](https://docs.microsoft.com/en-us/powershell/gallery/overview).
+The easiest way to install this module is through [PowerShellGet](https://docs.microsoft.com/en-us/powershell/gallery/overview) or [PSResourceGet](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.psresourceget/?view=powershellget-3.x).
 
-You can install this module by running;
+You can install this module by running either of the following `Install-PSResource` or `Install-Module` command.
 
 ```powershell
 # Install for only the current user
+Install-PSResource -Name PSToml -Scope CurrentUser
 Install-Module -Name PSToml -Scope CurrentUser
 
 # Install for all users
+Install-PSResource -Name PSToml -Scope AllUsers
 Install-Module -Name PSToml -Scope AllUsers
 ```
+
+The `Install-PSResource` cmdlet is part of the new `PSResourceGet` module from Microsoft available in newer versions while `Install-Module` is present on older systems.
 
 ## Contributing
 

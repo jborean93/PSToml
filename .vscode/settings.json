@@ -9,14 +9,6 @@
         "tools/ResGen": true,
         "tools/dotnet": true,
     },
-    "json.schemas": [
-        {
-            "fileMatch": [
-                "/test.settings.json"
-            ],
-            "url": "./tests/settings.schema.json"
-        }
-    ],
     "dotnet-test-explorer.testProjectPath": "tests/units/*.csproj",
     "editor.rulers": [
         120,

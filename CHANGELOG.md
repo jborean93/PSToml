@@ -2,6 +2,7 @@
 
 ## v0.4.0 - TBD
 
++ Raise minimum PowerShell 7.x version to 7.4
 + Bump Tomlyn to `0.19.0` for empty array bugfix
 + Fix logic to properly serialize an empty array value
 
