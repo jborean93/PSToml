@@ -26,7 +26,7 @@ else {
     if (-not ('PSToml.Shared.LoadContext' -as [type])) {
         $isReload = $false
 
-        Add-Type -Path ([System.IO.Path]::Combine($PSScriptRoot, 'bin', 'net6.0', "$moduleName.Shared.dll"))
+        Add-Type -Path ([System.IO.Path]::Combine($PSScriptRoot, 'bin', 'net8.0', "$moduleName.Shared.dll"))
     }
 
     $mainModule = [PSToml.Shared.LoadContext]::Initialize()

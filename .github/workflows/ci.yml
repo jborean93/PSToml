@@ -25,31 +25,25 @@ jobs:
 
     steps:
     - name: Check out repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: OIDC Login to Azure
       if: ${{ env.BUILD_CONFIGURATION == 'Release' }}
-      uses: azure/login@v1
+      uses: azure/login@v2
       with:
         client-id: ${{ secrets.AZURE_CLIENT_ID }}
         tenant-id: ${{ secrets.AZURE_TENANT_ID }}
         subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-    - name: Build module - Release
-      if: ${{ env.BUILD_CONFIGURATION == 'Release' }}
+    - name: Build module
       shell: pwsh
       run: ./build.ps1 -Configuration $env:BUILD_CONFIGURATION -Task Build
       env:
-        AZURE_KEYVAULT_NAME: ${{ secrets.AZURE_KEYVAULT_NAME }}
-        AZURE_KEYVAULT_CERT: ${{ secrets.AZURE_KEYVAULT_CERT }}
-
-    - name: Build module - Debug
-      shell: pwsh
-      run: ./build.ps1 -Configuration $env:BUILD_CONFIGURATION -Task Build
-      if: ${{ env.BUILD_CONFIGURATION == 'Debug' }}
+        AZURE_KEYVAULT_NAME: ${{ env.BUILD_CONFIGURATION == 'Release' && secrets.AZURE_KEYVAULT_NAME || '' }}
+        AZURE_KEYVAULT_CERT: ${{ env.BUILD_CONFIGURATION == 'Release' && secrets.AZURE_KEYVAULT_CERT || '' }}
 
     - name: Capture PowerShell Module
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: PSModule
         path: output/*.nupkg
@@ -66,88 +60,58 @@ jobs:
         - name: PS_5.1_x64_Windows
           psversion: '5.1'
           os: windows-latest
-        - name: PS_7.2_x64_Windows
-          psversion: '7.2.0'
-          os: windows-latest
-        - name: PS_7.2_x64_Linux
-          psversion: '7.2.0'
-          os: ubuntu-latest
-        - name: PS_7.3_x64_Windows
-          psversion: '7.3.0'
-          os: windows-latest
-        - name: PS_7.3_x64_Linux
-          psversion: '7.3.0'
-          os: ubuntu-latest
         - name: PS_7.4_x64_Windows
           psversion: '7.4.0'
           os: windows-latest
         - name: PS_7.4_x64_Linux
           psversion: '7.4.0'
           os: ubuntu-latest
+        - name: PS_7.5_x64_Windows
+          psversion: '7.5.0'
+          os: windows-latest
+        - name: PS_7.5_x64_Linux
+          psversion: '7.5.0'
+          os: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Restore Built PowerShell Module
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: PSModule
         path: output
 
-    - name: Install PowerShell
-      if: ${{ matrix.info.psversion != '5.1' }}
+    - name: Run Tests
       shell: pwsh
       run: |
-        tools/AssertPwsh.ps1 -RequiredVersion '${{ matrix.info.psversion }}'
-
-    - name: Install Built PowerShell Module
-      shell: pwsh
-      run: |
-        $manifestItem = Get-Item ([IO.Path]::Combine('module', '*.psd1'))
-        $moduleName = $manifestItem.BaseName
-        $manifest = Test-ModuleManifest -Path $manifestItem.FullName -ErrorAction SilentlyContinue -WarningAction Ignore
-
-        $destPath = [IO.Path]::Combine('output', $moduleName, $manifest.Version)
-        if (-not (Test-Path -LiteralPath $destPath)) {
-            New-Item -Path $destPath -ItemType Directory | Out-Null
+        $buildParams = @{
+            Configuration = $env:BUILD_CONFIGURATION
+            Task = 'Test'
+            PowerShellVersion = '${{ matrix.info.psversion }}'
+            ModuleNupkg = 'output/*.nupkg'
         }
-
-        # WinPS doesn't support extracting from anything without a .zip extension so we need to rename it
-        Get-ChildItem output/*.nupkg | Rename-Item -NewName { $_.Name -replace '.nupkg', '.zip' }
-
-        Expand-Archive -Path output/*.zip -DestinationPath $destPath -Force -ErrorAction Stop
-
-    - name: Run Tests - Windows PowerShell
-      if: ${{ matrix.info.psversion == '5.1' }}
-      shell: pwsh
-      run: |
-        powershell.exe -NoProfile -File ./build.ps1 -Configuration $env:BUILD_CONFIGURATION -Task Test
-        exit $LASTEXITCODE
-
-    - name: Run Tests - PowerShell
-      if: ${{ matrix.info.psversion != '5.1' }}
-      shell: pwsh
-      run: |
-        & "output/pwsh-${{ matrix.info.psversion }}/pwsh" -NoProfile -File ./build.ps1 -Configuration $env:BUILD_CONFIGURATION -Task Test
+        ./build.ps1 @buildParams
         exit $LASTEXITCODE
 
     - name: Upload Test Results
       if: always()
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: Unit Test Results (${{ matrix.info.name }})
         path: ./output/TestResults/Pester.xml
 
     - name: Upload Coverage Results
-      if: always() && !startsWith(github.ref, 'refs/tags/v')
-      uses: actions/upload-artifact@v3
+      if: always()
+      uses: actions/upload-artifact@v4
       with:
         name: Coverage Results (${{ matrix.info.name }})
         path: ./output/TestResults/Coverage.xml
 
     - name: Upload Coverage to codecov
-      if: always() && !startsWith(github.ref, 'refs/tags/v')
-      uses: codecov/codecov-action@v3
+      if: always()
+      uses: codecov/codecov-action@v4
       with:
         files: ./output/TestResults/Coverage.xml
         flags: ${{ matrix.info.name }}
+        token: ${{ secrets.CODECOV_TOKEN }}
