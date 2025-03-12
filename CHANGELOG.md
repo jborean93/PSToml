@@ -1,6 +1,6 @@
 # Changelog for PSToml
 
-## v0.4.0 - TBD
+## v0.4.0 - 2025-03-12
 
 + Raise minimum PowerShell 7.x version to 7.4
 + Bump Tomlyn to `0.19.0` for empty array bugfix
