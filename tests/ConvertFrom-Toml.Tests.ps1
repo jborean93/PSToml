@@ -233,4 +233,25 @@ bar = []
         ,$actual.features.bar | Should -BeOfType ([object[]])
         $actual.features.bar.Count | Should -Be 0
     }
+
+    It "Converts array with DateTime value" {
+        $actual = ConvertFrom-Toml -InputObject @'
+key = ["1979-05-27T07:32:00-08:00", 1979-05-27T07:32:00-08:00]
+'@
+
+        ,$actual.key | Should -BeOfType ([object[]])
+        $actual.key.Count | Should -Be 2
+
+        $actual.key[0] | Should -BeOfType ([string])
+        $actual.key[0] | Should -Be "1979-05-27T07:32:00-08:00"
+
+        $actual.key[1] | Should -BeOfType ([DateTimeOffset])
+        $actual.key[1].Year | Should -Be 1979
+        $actual.key[1].Month | Should -Be 5
+        $actual.key[1].Day | Should -Be 27
+        $actual.key[1].Hour | Should -Be 7
+        $actual.key[1].Minute | Should -Be 32
+        $actual.key[1].Second | Should -Be 0
+        $actual.key[1].Offset.TotalHours | Should -Be -8
+    }
 }
