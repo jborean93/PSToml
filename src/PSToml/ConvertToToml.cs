@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Management.Automation;
+using System.Numerics;
 using Tomlyn;
 using Tomlyn.Model;
 
@@ -88,7 +89,7 @@ internal sealed class TomlConverter
         if (depth < 0)
         {
             WasTruncated = true;
-            return inputObject?.ToString() ?? "";
+            return CastToString(inputObject);
         }
 
         return inputObject switch
@@ -143,8 +144,8 @@ internal sealed class TomlConverter
         TomlTable model = new(inline: false);
         foreach (DictionaryEntry entry in dict)
         {
-            object value = ConvertToTomlObject(entry.Value ?? "", depth - 1);
-            model.Add(entry.Key.ToString() ?? "", value);
+            object value = ConvertToTomlObject(entry.Value, depth - 1);
+            model.Add(CastToString(entry.Key), value);
         }
 
         return model;
@@ -163,20 +164,75 @@ internal sealed class TomlConverter
 
         if (obj is char || obj is Guid)
         {
-            return obj.ToString() ?? "";
+            return CastToString(obj);
         }
         else if (obj is Enum enumObj)
         {
-            return Convert.ChangeType(enumObj, enumObj.GetTypeCode());
+            object rawEnum = Convert.ChangeType(enumObj, enumObj.GetTypeCode());
+            if (rawEnum is ulong ul && ul > long.MaxValue)
+            {
+                return ul.ToString();
+            }
+            else
+            {
+                return rawEnum;
+            }
         }
-        else if (obj is IntPtr ptr)
+        else if (obj is nint ptr)
         {
             return (long)ptr;
         }
-        else if (obj is UIntPtr uptr)
+        else if (obj is nuint uptr)
         {
-            return (ulong)uptr;
+            ulong uptrValue = uptr;
+            if (uptrValue <= long.MaxValue)
+            {
+                return (long)uptr;
+            }
+            else
+            {
+                return uptrValue.ToString();
+            }
         }
+        else if (obj is BigInteger bi)
+        {
+            if (bi >= long.MinValue && bi <= long.MaxValue)
+            {
+                return (long)bi;
+            }
+            else
+            {
+                return bi.ToString();
+            }
+        }
+        else if (obj is ulong ul && ul > long.MaxValue)
+        {
+            return ul.ToString();
+        }
+#if NET8_0_OR_GREATER
+        else if (obj is Int128 int128)
+        {
+            if (int128 >= long.MinValue && int128 <= long.MaxValue)
+            {
+                return (long)int128;
+            }
+            else
+            {
+                return int128.ToString();
+            }
+        }
+        else if (obj is UInt128 uint128)
+        {
+            if (uint128 <= long.MaxValue)
+            {
+                return (ulong)uint128;
+            }
+            else
+            {
+                return uint128.ToString();
+            }
+        }
+#endif
 
         if (
             obj is bool ||
@@ -184,12 +240,12 @@ internal sealed class TomlConverter
             obj is DateTimeOffset ||
             obj is sbyte ||
             obj is byte ||
-            obj is Int16 ||
-            obj is UInt16 ||
-            obj is Int32 ||
-            obj is UInt32 ||
-            obj is Int64 ||
-            obj is UInt64 ||
+            obj is short ||
+            obj is ushort ||
+            obj is int ||
+            obj is uint ||
+            obj is long ||
+            obj is ulong ||
             obj is float ||
             obj is double ||
             obj is string
@@ -216,4 +272,7 @@ internal sealed class TomlConverter
 
         return model;
     }
+
+    private static string CastToString(object? obj)
+        => LanguagePrimitives.ConvertTo<string>(obj);
 }

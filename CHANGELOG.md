@@ -1,5 +1,13 @@
 # Changelog for PSToml
 
+## v0.5.0 - TBD
+
++ Serializes `UInt64` values that are larger than `Int64.MaxValue` as a string
+  + Toml only supports a 64-bit signed integer so Tomlyn would auto cast to a `Int64` changing the result to a negative number
++ Ensure depth stringification uses the PowerShell string casting behaviour
++ Support `BigInteger` and `Int128`/`UInt128` (PowerShell 7+)
+  + Values that fit within a `Int64` will be serialized as an integer while anything beyond the range will become a string
+
 ## v0.4.0 - 2025-03-12
 
 + Raise minimum PowerShell 7.x version to 7.4

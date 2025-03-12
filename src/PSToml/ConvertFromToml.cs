@@ -81,7 +81,6 @@ public sealed class ConvertFromTomlCommand : PSCmdlet
             {
                 TomlArray a => ConvertToArray(a),
                 TomlTable t => ConvertToOrderedDictionary(t),
-                TomlTableArray ta => ConvertToListOfOrderedDictionary(ta),
                 TomlDateTime dt => dt.DateTime,
                 _ => value,
             };
