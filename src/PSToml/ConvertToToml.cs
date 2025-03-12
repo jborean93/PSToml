@@ -101,14 +101,14 @@ internal sealed class TomlConverter
 
     private TomlObject ConvertToTomlArray(IList array, int depth)
     {
-        List<object> results = new();
-        bool isTableArray = true;
+        List<object> results = new(array.Count);
+        bool isTableArray = array.Count > 0;
 
         foreach (object value in array)
         {
             object toSerialize = ConvertToTomlObject(value, depth - 1);
 
-            if (!(toSerialize is TomlTable tt))
+            if (toSerialize is not TomlTable tt)
             {
                 isTableArray = false;
             }
@@ -135,7 +135,6 @@ internal sealed class TomlConverter
             }
 
             return a;
-
         }
     }
 

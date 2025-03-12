@@ -1,5 +1,10 @@
 # Changelog for PSToml
 
+## v0.4.0 - TBD
+
++ Bump Tomlyn to `0.19.0` for empty array bugfix
++ Fix logic to properly serialize an empty array value
+
 ## v0.3.1 - 2024-01-29
 
 + Serialize any IList type as a Toml array value and not just an array
