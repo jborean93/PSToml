@@ -1,5 +1,6 @@
 using namespace System.Collections
 using namespace System.IO
+using namespace System.Text
 
 #Requires -Version 7.2
 
@@ -63,17 +64,23 @@ task BuildDocs {
 }
 
 task Sign {
-    $vaultName = $env:AZURE_KEYVAULT_NAME
-    $vaultCert = $env:AZURE_KEYVAULT_CERT
-    if (-not $vaultName -or -not $vaultCert) {
+    $accountName = $env:AZURE_TS_NAME
+    $profileName = $env:AZURE_TS_PROFILE
+    $endpoint = $env:AZURE_TS_ENDPOINT
+    if (-not $accountName -or -not $profileName -or -not $endpoint) {
         return
     }
 
-    Write-Host "Authenticating with Azure KeyVault '$vaultName' for signing" -ForegroundColor Cyan
-    $key = Get-OpenAuthenticodeAzKey -Vault $vaultName -Certificate $vaultCert
+    Write-Host "Authenticating with Azure TrustedSigning $accountName $profileName for signing" -ForegroundColor Cyan
+    $keyParams = @{
+        AccountName = $accountName
+        ProfileName = $profileName
+        Endpoint = $endpoint
+    }
+    $key = Get-OpenAuthenticodeAzTrustedSigner @keyParams
     $signParams = @{
         Key = $key
-        TimeStampServer = 'http://timestamp.digicert.com'
+        TimeStampServer = 'http://timestamp.acs.microsoft.com'
     }
 
     $toSign = Get-ChildItem -LiteralPath $Manifest.ReleasePath -Recurse -ErrorAction SilentlyContinue |
@@ -240,6 +247,7 @@ task CoverageReport {
     $reportArgs = @(
         "-reports:$coveragePath"
         "-targetdir:$reportPath"
+        '-filefilters:-*.g.cs'  # Filter out source generated files
         '-reporttypes:Html_Dark;JsonSummary'
     )
     reportgenerator @reportArgs
@@ -247,8 +255,8 @@ task CoverageReport {
         throw "reportgenerator failed with RC of $LASTEXITCODE"
     }
 
-    $resultPath = [Path]::Combine($reportPath, "Summary.json")
-    Format-CoverageInfo -Path $resultPath
+    $coverageScript = [Path]::Combine($PSScriptRoot, 'CoverageReport.ps1')
+    & $coverageScript -Path $coveragePath
 }
 
 #endregion Test
