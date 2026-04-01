@@ -1,5 +1,10 @@
 # Changelog for PSToml
 
+## v0.6.0 - TBD
+
++ Updated `Tomlyn` to `2.3.0`
+  + This may affect `ConvertTo-Toml` and how it serializes certain types
+
 ## v0.5.0 - 2026-04-02
 
 + Serializes `UInt64` values that are larger than `Int64.MaxValue` as a string
