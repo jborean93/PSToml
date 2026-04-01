@@ -1,6 +1,6 @@
 # Changelog for PSToml
 
-## v0.5.0 - TBD
+## v0.5.0 - 2026-04-02
 
 + Serializes `UInt64` values that are larger than `Int64.MaxValue` as a string
   + Toml only supports a 64-bit signed integer so Tomlyn would auto cast to a `Int64` changing the result to a negative number
