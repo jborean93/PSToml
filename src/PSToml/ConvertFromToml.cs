@@ -37,7 +37,7 @@ public sealed class ConvertFromTomlCommand : PSCmdlet
         TomlTable table;
         try
         {
-            table = Toml.ToModel(toml);
+            table = TomlSerializer.Deserialize<TomlTable>(toml)!;
         }
         catch (Exception e)
         {
@@ -64,7 +64,7 @@ public sealed class ConvertFromTomlCommand : PSCmdlet
                 TomlArray a => ConvertToArray(a),
                 TomlTable t => ConvertToOrderedDictionary(t),
                 TomlTableArray ta => ConvertToListOfOrderedDictionary(ta),
-                TomlDateTime dt => dt.DateTime,
+                TomlDateTime dt => ConvertToDateTime(dt),
                 _ => kvp.Value,
             };
         }
@@ -81,7 +81,7 @@ public sealed class ConvertFromTomlCommand : PSCmdlet
             {
                 TomlArray a => ConvertToArray(a),
                 TomlTable t => ConvertToOrderedDictionary(t),
-                TomlDateTime dt => dt.DateTime,
+                TomlDateTime dt => ConvertToDateTime(dt),
                 _ => value,
             };
             result.Add(newValue);
@@ -99,5 +99,23 @@ public sealed class ConvertFromTomlCommand : PSCmdlet
         }
 
         return result.ToArray();
+    }
+
+    private DateTimeOffset ConvertToDateTime(TomlDateTime dt)
+    {
+        // In Tomlyn 1.x+, local datetimes (without timezone) are returned as
+        // UTC. We need to convert them to the local timezone to maintain
+        // backwards compatibility with previous versions of PSToml.
+        if (
+            dt.Kind == TomlDateTimeKind.LocalDateTime ||
+            dt.Kind == TomlDateTimeKind.LocalDate ||
+            dt.Kind == TomlDateTimeKind.LocalTime
+        ) {
+            // Convert from UTC to local time, preserving the date/time components
+            var localOffset = DateTimeOffset.Now.Offset;
+            return new DateTimeOffset(dt.DateTime.DateTime, localOffset);
+        }
+
+        return dt.DateTime;
     }
 }
