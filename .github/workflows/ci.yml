@@ -8,12 +8,16 @@ on:
     branches:
     - main
 
+  release:
+    types:
+    - published
+
 env:
   DOTNET_CLI_TELEMETRY_OPTOUT: 1
   POWERSHELL_TELEMETRY_OPTOUT: 1
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
   DOTNET_NOLOGO: true
-  BUILD_CONFIGURATION: ${{ fromJSON('["Debug", "Release"]')[github.ref == 'refs/heads/main'] }}
+  BUILD_CONFIGURATION: ${{ fromJSON('["Debug", "Release"]')[github.ref == 'refs/heads/main' || startsWith(github.event.release.tag_name, 'v')] }}
 
 jobs:
   build:
@@ -25,25 +29,29 @@ jobs:
 
     steps:
     - name: Check out repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
 
-    - name: OIDC Login to Azure
-      if: ${{ env.BUILD_CONFIGURATION == 'Release' }}
-      uses: azure/login@v2
-      with:
-        client-id: ${{ secrets.AZURE_CLIENT_ID }}
-        tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+    - name: OIDC Login to Azure - Release only
+      if: startsWith(github.event.release.tag_name, 'v')
+      shell: pwsh
+      run: |
+        $loginParams = @{
+            ClientId = '${{ secrets.AZURE_CLIENT_ID }}'
+            TenantId = '${{ secrets.AZURE_TENANT_ID }}'
+            SubscriptionId = '${{ secrets.AZURE_SUBSCRIPTION_ID }}'
+        }
+        ./tools/AzLoginOIDC.ps1 @loginParams
 
     - name: Build module
       shell: pwsh
       run: ./build.ps1 -Configuration $env:BUILD_CONFIGURATION -Task Build
       env:
-        AZURE_KEYVAULT_NAME: ${{ env.BUILD_CONFIGURATION == 'Release' && secrets.AZURE_KEYVAULT_NAME || '' }}
-        AZURE_KEYVAULT_CERT: ${{ env.BUILD_CONFIGURATION == 'Release' && secrets.AZURE_KEYVAULT_CERT || '' }}
+        AZURE_TS_NAME: ${{ startsWith(github.event.release.tag_name, 'v') && secrets.AZURE_TS_NAME || '' }}
+        AZURE_TS_PROFILE: ${{ startsWith(github.event.release.tag_name, 'v') && secrets.AZURE_TS_PROFILE || '' }}
+        AZURE_TS_ENDPOINT: ${{ startsWith(github.event.release.tag_name, 'v') && secrets.AZURE_TS_ENDPOINT || '' }}
 
     - name: Capture PowerShell Module
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: PSModule
         path: output/*.nupkg
@@ -74,10 +82,15 @@ jobs:
           os: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
+
+    # Seems to be needed for macOS to run coverlet
+    - uses: actions/setup-dotnet@v5
+      with:
+        dotnet-version: '10.0.x'
 
     - name: Restore Built PowerShell Module
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v8
       with:
         name: PSModule
         path: output
@@ -96,22 +109,59 @@ jobs:
 
     - name: Upload Test Results
       if: always()
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: Unit Test Results (${{ matrix.info.name }})
         path: ./output/TestResults/Pester.xml
 
     - name: Upload Coverage Results
       if: always()
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: Coverage Results (${{ matrix.info.name }})
         path: ./output/TestResults/Coverage.xml
 
     - name: Upload Coverage to codecov
       if: always()
-      uses: codecov/codecov-action@v4
+      uses: codecov/codecov-action@v6
       with:
         files: ./output/TestResults/Coverage.xml
         flags: ${{ matrix.info.name }}
         token: ${{ secrets.CODECOV_TOKEN }}
+
+  publish:
+    name: publish
+    needs:
+    - test
+    if: startsWith(github.event.release.tag_name, 'v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write  # Needed for GitHub release asset task
+
+    steps:
+    - name: Download artifact and upload to release
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        RUN_ID=$(gh run list --workflow ci.yml --commit "${{ github.sha }}" --json databaseId --jq '.[0].databaseId')
+        echo "Run ID: $RUN_ID"
+
+        gh run download \
+          --repo "${{ github.repository }}" \
+          --name PSModule \
+          "${RUN_ID}"
+
+        gh release upload \
+          "${{ github.event.release.tag_name }}" \
+          *.nupkg \
+          --repo "${{ github.repository }}"
+
+    - name: Publish to the PowerShell Gallery
+      shell: pwsh
+      run: >-
+        dotnet nuget push '*.nupkg'
+        --api-key $env:PSGALLERY_TOKEN
+        --source 'https://www.powershellgallery.com/api/v2/package'
+        --no-symbols
+      env:
+        PSGALLERY_TOKEN: ${{ secrets.PSGALLERY_TOKEN }}
