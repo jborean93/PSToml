@@ -7,6 +7,7 @@
 + Ensure depth stringification uses the PowerShell string casting behaviour
 + Support `BigInteger` and `Int128`/`UInt128` (PowerShell 7+)
   + Values that fit within a `Int64` will be serialized as an integer while anything beyond the range will become a string
++ Properly handle nested dictionary and list like objects that are wrapped by `PSObject` during serialization
 
 ## v0.4.0 - 2025-03-12
 

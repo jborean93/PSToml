@@ -92,10 +92,18 @@ internal sealed class TomlConverter
             return CastToString(inputObject);
         }
 
-        return inputObject switch
+        object unwrapped = inputObject;
+        if (unwrapped is PSObject psObj)
+        {
+            unwrapped = psObj.BaseObject;
+        }
+
+        return unwrapped switch
         {
             IDictionary dict => ConvertToTomlTable(dict, depth),
             IList array => ConvertToTomlArray(array, depth),
+            // Still operate on the inputObject even if it's a PSObject,
+            // ConvertToTomlFriendlyObject will unwrap it as needed.
             _ => ConvertToTomlFriendlyObject(inputObject, depth),
         };
     }

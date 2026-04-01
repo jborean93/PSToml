@@ -237,4 +237,19 @@ two = "9223372036854775808"
 
 '@
     }
+
+    It "Handles PSObject wrapped dictionary in serialization" {
+        $actual = @{
+            windows = [PSObject][Ordered]@{
+                path = 'mypath\path'; comment = 'this is a comment'
+            }
+        } | ConvertTo-Toml -Depth 4
+
+        $actual | Should -Be @'
+[windows]
+path = "mypath\\path"
+comment = "this is a comment"
+
+'@
+    }
 }
