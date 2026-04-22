@@ -1,13 +1,16 @@
 [CmdletBinding()]
 param (
     [Parameter(Mandatory)]
-    [string]$ClientId,
+    [string]
+    $ClientId,
 
     [Parameter(Mandatory)]
-    [string]$TenantId,
+    [string]
+    $TenantId,
 
-    [Parameter(Mandatory)]
-    [string]$SubscriptionId
+    [Parameter()]
+    [string]
+    $SubscriptionId
 )
 
 $ErrorActionPreference = 'Stop'
@@ -45,7 +48,9 @@ if ($LASTEXITCODE) {
     throw "Azure login failed with exit code $LASTEXITCODE"
 }
 
-az account set --subscription $SubscriptionId
-if ($LASTEXITCODE) {
-    throw "Azure account set failed with exit code $LASTEXITCODE"
+if ($SubscriptionId) {
+    az account set --subscription $SubscriptionId
+    if ($LASTEXITCODE) {
+        throw "Azure account set failed with exit code $LASTEXITCODE"
+    }
 }

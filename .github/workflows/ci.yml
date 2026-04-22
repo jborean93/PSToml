@@ -38,7 +38,6 @@ jobs:
         $loginParams = @{
             ClientId = '${{ secrets.AZURE_CLIENT_ID }}'
             TenantId = '${{ secrets.AZURE_TENANT_ID }}'
-            SubscriptionId = '${{ secrets.AZURE_SUBSCRIPTION_ID }}'
         }
         ./tools/AzLoginOIDC.ps1 @loginParams
 
@@ -80,14 +79,15 @@ jobs:
         - name: PS_7.5_x64_Linux
           psversion: '7.5.0'
           os: ubuntu-latest
+        - name: PS_7.6_x64_Windows
+          psversion: '7.6.0'
+          os: windows-latest
+        - name: PS_7.6_x64_Linux
+          psversion: '7.6.0'
+          os: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v6
-
-    # Seems to be needed for macOS to run coverlet
-    - uses: actions/setup-dotnet@v5
-      with:
-        dotnet-version: '10.0.x'
 
     - name: Restore Built PowerShell Module
       uses: actions/download-artifact@v8
@@ -119,13 +119,13 @@ jobs:
       uses: actions/upload-artifact@v7
       with:
         name: Coverage Results (${{ matrix.info.name }})
-        path: ./output/TestResults/Coverage.xml
+        path: ./output/TestResults/Coverage.cobertura.xml
 
     - name: Upload Coverage to codecov
       if: always()
       uses: codecov/codecov-action@v6
       with:
-        files: ./output/TestResults/Coverage.xml
+        files: ./output/TestResults/Coverage.cobertura.xml
         flags: ${{ matrix.info.name }}
         token: ${{ secrets.CODECOV_TOKEN }}
 
