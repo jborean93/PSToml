@@ -5,7 +5,7 @@ Describe "ConvertFrom-Toml" {
         $actual = ConvertFrom-Toml -InputObject 'foo' -ErrorAction SilentlyContinue -ErrorVariable err
         $actual | Should -BeNullOrEmpty
         $err.Count | Should -Be 1
-        [string]$err[0] | Should -BeLike '*Expecting ``=`` after a key instead of*'
+        [string]$err[0] | Should -BeLike '*Expected ``=`` after key*'
     }
 
     It "Converts multiple input values into 1 toml object" {

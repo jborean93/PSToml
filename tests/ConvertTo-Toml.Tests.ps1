@@ -62,8 +62,10 @@ color = "red"
 shape = "round"
 [[fruits.varieties]]
 name = "red delicious"
+
 [[fruits.varieties]]
 name = "granny smith"
+
 [[fruits]]
 name = "banana"
 [[fruits.varieties]]

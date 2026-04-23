@@ -35,7 +35,7 @@ public sealed class ConvertToTomlCommand : PSCmdlet
                 TomlTable model = converter.ConvertToToml(input);
                 wasTruncated = converter.WasTruncated;
 
-                res = Toml.FromModel(model);
+                res = TomlSerializer.Serialize(model);
             }
             catch (Exception e)
             {
