@@ -386,13 +386,22 @@ function Show-SummaryReport {
 
     Write-Host "Files with missing coverage:"
     Write-Host ""
-    $header = "{0,-$nameWidth} Stmts Miss Branch BrPart   Cover" -f "Name"
+    $header = "{0,-$nameWidth} Stmts Miss Branch BrPart Cover" -f "Name"
     Write-Host "$($PSStyle.Bold)$header$($PSStyle.Reset)"
     Write-Host ("{0}" -f ("-" * $consoleWidth))
+
+    $projectRoot = Split-Path -Path $PSScriptRoot -Parent
 
     foreach ($file in $fileData) {
         # Truncate filename if too long
         $name = $file.Name
+        if ($name -like "/_/*") {
+            $name = $name.Substring(3)
+        }
+        else {
+            $name = [Path]::GetRelativePath($projectRoot, $name)
+        }
+
         if ($name.Length -gt $nameWidth) {
             $name = "..." + $name.Substring($name.Length - ($nameWidth - 3))
         }
